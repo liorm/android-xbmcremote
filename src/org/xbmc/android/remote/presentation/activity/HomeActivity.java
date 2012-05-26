@@ -24,6 +24,7 @@ package org.xbmc.android.remote.presentation.activity;
 import org.xbmc.android.remote.R;
 import org.xbmc.android.remote.business.CacheManager;
 import org.xbmc.android.remote.business.ManagerFactory;
+import org.xbmc.android.remote.business.ServerVolumeManager;
 import org.xbmc.android.remote.presentation.controller.HomeController;
 import org.xbmc.android.remote.presentation.controller.HomeController.ProgressThread;
 import org.xbmc.android.util.KeyTracker.Stage;
@@ -256,12 +257,13 @@ public class HomeActivity extends Activity {
 	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
-				mEventClientManager.sendButton("R1", ButtonCodes.REMOTE_VOLUME_PLUS, false, true, true, (short)0, (byte)0);
+				ServerVolumeManager.getInstance().incVolume();
 				return true;
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				mEventClientManager.sendButton("R1", ButtonCodes.REMOTE_VOLUME_MINUS, false, true, true, (short)0, (byte)0);
+				ServerVolumeManager.getInstance().decVolume();
 				return true;
 			case KeyEvent.KEYCODE_BACK:
 				if(OnLongPressBackKeyTracker.lastStage == Stage.LONG_REPEAT) {

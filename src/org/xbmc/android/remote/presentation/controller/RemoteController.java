@@ -26,6 +26,7 @@ import java.util.TimerTask;
 
 import org.xbmc.android.remote.R;
 import org.xbmc.android.remote.business.ManagerFactory;
+import org.xbmc.android.remote.business.ServerVolumeManager;
 import org.xbmc.android.remote.presentation.activity.GestureRemoteActivity;
 import org.xbmc.android.remote.presentation.activity.NowPlayingActivity;
 import org.xbmc.android.widget.gestureremote.IGestureListener;
@@ -268,10 +269,10 @@ public class RemoteController extends AbstractController implements INotifiableC
 		}
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
-				mEventClientManager.sendButton("R1", ButtonCodes.REMOTE_VOLUME_PLUS, false, true, true, (short)0, (byte)0);
+				ServerVolumeManager.getInstance().incVolume();
 				return true;
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				mEventClientManager.sendButton("R1", ButtonCodes.REMOTE_VOLUME_MINUS, false, true, true, (short)0, (byte)0);
+				ServerVolumeManager.getInstance().decVolume();
 				return true;
 			case KeyEvent.KEYCODE_DPAD_DOWN:
 				return onDirectionalPadDown(keyCode);

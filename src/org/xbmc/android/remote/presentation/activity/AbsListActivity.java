@@ -23,6 +23,7 @@ package org.xbmc.android.remote.presentation.activity;
 
 import org.xbmc.android.remote.R;
 import org.xbmc.android.remote.business.ManagerFactory;
+import org.xbmc.android.remote.business.ServerVolumeManager;
 import org.xbmc.android.remote.presentation.controller.ListController;
 import org.xbmc.android.remote.presentation.controller.RemoteController;
 import org.xbmc.android.util.KeyTracker;
@@ -149,16 +150,14 @@ public abstract class AbsListActivity extends Activity {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		IEventClientManager client = ManagerFactory.getEventClientManager(mListController);
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
-				client.sendButton("R1", ButtonCodes.REMOTE_VOLUME_PLUS, false, true, true, (short) 0, (byte) 0);
+				ServerVolumeManager.getInstance().incVolume();
 				return true;
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				client.sendButton("R1", ButtonCodes.REMOTE_VOLUME_MINUS, false, true, true, (short) 0, (byte) 0);
+				ServerVolumeManager.getInstance().decVolume();
 				return true;
 		}
-		client.setController(null);
 		boolean handled =  (mKeyTracker != null)?mKeyTracker.doKeyDown(keyCode, event):false;
 		return handled || super.onKeyDown(keyCode, event);
 	}

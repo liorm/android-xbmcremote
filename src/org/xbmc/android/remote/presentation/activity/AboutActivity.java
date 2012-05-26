@@ -23,6 +23,7 @@ package org.xbmc.android.remote.presentation.activity;
 
 import org.xbmc.android.remote.R;
 import org.xbmc.android.remote.business.ManagerFactory;
+import org.xbmc.android.remote.business.ServerVolumeManager;
 import org.xbmc.api.business.IEventClientManager;
 import org.xbmc.api.type.ThumbSize;
 import org.xbmc.eventclient.ButtonCodes;
@@ -81,10 +82,10 @@ public class AboutActivity extends Activity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_UP:
-				mEventClientManager.sendButton("R1", ButtonCodes.REMOTE_VOLUME_PLUS, false, true, true, (short)0, (byte)0);
+				ServerVolumeManager.getInstance().incVolume();
 				return true;
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
-				mEventClientManager.sendButton("R1", ButtonCodes.REMOTE_VOLUME_MINUS, false, true, true, (short)0, (byte)0);
+				ServerVolumeManager.getInstance().decVolume();
 				return true;
 		}
 		return super.onKeyDown(keyCode, event);

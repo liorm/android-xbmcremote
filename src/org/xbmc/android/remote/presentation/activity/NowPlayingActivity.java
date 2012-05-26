@@ -23,6 +23,7 @@ package org.xbmc.android.remote.presentation.activity;
 
 import org.xbmc.android.remote.R;
 import org.xbmc.android.remote.business.ManagerFactory;
+import org.xbmc.android.remote.business.ServerVolumeManager;
 import org.xbmc.android.remote.presentation.controller.NowPlayingController;
 import org.xbmc.android.remote.presentation.controller.RemoteController;
 import org.xbmc.android.remote.presentation.widget.JewelView;
@@ -50,6 +51,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class NowPlayingActivity extends Activity {
 
@@ -66,6 +68,8 @@ public class NowPlayingActivity extends Activity {
 	private KeyTracker mKeyTracker;
 
 	private boolean mMonitorMode = false;
+	
+	private Handler mVolumeChangeHandler;
 
 	private static final int MENU_REMOTE = 303;
 	private static final int MENU_MONITOR_MODE = 304;
@@ -206,13 +210,12 @@ public class NowPlayingActivity extends Activity {
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		IEventClientManager client = ManagerFactory.getEventClientManager(mNowPlayingController);
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_VOLUME_UP:
-			client.sendButton("R1", ButtonCodes.REMOTE_VOLUME_PLUS, false, true, true, (short) 0, (byte) 0);
+			ServerVolumeManager.getInstance().incVolume();
 			return true;
 		case KeyEvent.KEYCODE_VOLUME_DOWN:
-			client.sendButton("R1", ButtonCodes.REMOTE_VOLUME_MINUS, false, true, true, (short) 0, (byte) 0);
+			ServerVolumeManager.getInstance().decVolume();
 			return true;
 		case KeyEvent.KEYCODE_SEARCH:
 			switchMonitorMode();
@@ -221,7 +224,6 @@ public class NowPlayingActivity extends Activity {
 			switchMonitorMode();
 			return true;*/
 		}
-		client.setController(null);
 		boolean handled = (mKeyTracker != null) ? mKeyTracker.doKeyDown(keyCode, event) : false;
 		return handled || super.onKeyDown(keyCode, event);
 	}
@@ -236,6 +238,37 @@ public class NowPlayingActivity extends Activity {
 		super.onResume();
 		mNowPlayingController.onActivityResume(this);
 		mConfigurationManager.onActivityResume(this);
+		
+		if ( mVolumeChangeHandler == null )
+		{
+			final Context parentContext = this;
+			mVolumeChangeHandler = new Handler() 
+				{
+					private Toast mActiveToast;
+					
+					public void handleMessage(android.os.Message msg) 
+					{
+						if ( msg.what != ServerVolumeManager.MESSAGE_VOLUME_CHANGED )
+							return;
+						
+						int newVolume = msg.getData().getInt(ServerVolumeManager.BUNDLE_LAST_VOLUME);
+						
+						String volumeText = String.format("New volume: %d", newVolume);
+						if ( mActiveToast != null )
+						{
+							mActiveToast.setText(volumeText);
+							mActiveToast.setDuration(Toast.LENGTH_SHORT);
+							mActiveToast.show();
+						}
+						else
+						{
+							mActiveToast = Toast.makeText(parentContext, volumeText, Toast.LENGTH_SHORT);
+							mActiveToast.show();
+						}
+					};
+				};
+		}
+		ServerVolumeManager.getInstance().subscribe(this, mVolumeChangeHandler);
 		handleLayout();
 	}
 
@@ -244,6 +277,7 @@ public class NowPlayingActivity extends Activity {
 		super.onPause();
 		mNowPlayingController.onActivityPause();
 		mConfigurationManager.onActivityPause();
+		ServerVolumeManager.getInstance().unSubscribe(mVolumeChangeHandler);
 	}
 
 	private void handleLayout() {
